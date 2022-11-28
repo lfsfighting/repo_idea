@@ -70,32 +70,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseResult getUserPermissions(Integer id) {
+    public ResponseResult getUserPermissions(Integer userid) {
+        // 1. 获取当前用户拥有的角色
+        List<Role> roleList = userMapper.findUserRelationRoleById(userid);
 
-        //1.获取当前用户拥有的角色
-        List<Role> roleList = userMapper.findUserRelationRoleById(id);
-        //2.获取角色ID,保存到 list
-        List<Integer> list = new ArrayList<>();
+        // 2. 获取角色ID，保存到List集合中
+        ArrayList<Integer> roleIds = new ArrayList<>();
+
         for (Role role : roleList) {
-            list.add(role.getId());
+            roleIds.add(role.getId());
         }
-        //3.根据角色id查询 父菜单
-        List<Menu> parentMenu = userMapper.findParentMenuByRoleId(list);
 
+        // 3.根据角色ID查询父菜单
+        List<Menu> parentMenu = userMapper.findParentMenuByRoleId(roleIds);
 
-        //4.封装父菜单下的子菜单
+        // 4.查封封装父菜单关联的子菜单
         for (Menu menu : parentMenu) {
             List<Menu> subMenu = userMapper.findSubMenuByPid(menu.getId());
             menu.setSubMenuList(subMenu);
         }
-        //5.获取资源权限
-        List<Resource> resourceList = userMapper.findResourceByRoleId(list);
-        //6.封装数据
-        Map<String,Object> map = new HashMap<>();
-        map.put("menuList",parentMenu); //menuList: 菜单权限数据
-        map.put("resourceList",resourceList);//resourceList: 资源权限数据
-        ResponseResult result = new ResponseResult(true,200,"响应成功",map);
-        return result;
 
+        // 5.获取资源信息
+        List<Resource> resourceList = userMapper.findResourceByRoleId(roleIds);
+
+
+        // 6. 封装数据并返回
+        Map<String, Object> map = new HashMap<>();
+        map.put("menuList",parentMenu);
+        map.put("resourceList",resourceList);
+
+
+
+        return new ResponseResult(true,200,"获取用户权限信息成功",map);
     }
+
 }

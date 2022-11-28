@@ -26,7 +26,7 @@ public interface UserService {
      public void userContextRole(UserVo userVo);
 
     /*
-     * 获取用户权限
-     * */
-    public ResponseResult getUserPermissions(Integer id);
+        获取用户权限，进行菜单动态展示
+     */
+    public ResponseResult getUserPermissions(Integer userid);
 }

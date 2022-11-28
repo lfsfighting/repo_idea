@@ -94,21 +94,22 @@ public class UserController {
     @RequestMapping("/getUserPermissions")
     public ResponseResult getUserPermissions(HttpServletRequest request){
 
-        //获取请求头中的 token
-        String token = request.getHeader("Authorization");
+        // 1.获取请求头中的token
+        String header_token = request.getHeader("Authorization");
 
-        //获取session中的access_token
-        HttpSession session = request.getSession();
-        String access_token = (String)session.getAttribute("access_token");
+        // 2.获取session中token
+        String session_token = (String) request.getSession().getAttribute("access_token");
 
-        //判断
-        if(token.equals(access_token)){
-            int user_id = (Integer)session.getAttribute("user_id");
-            ResponseResult result = userService.getUserPermissions(user_id);
-            return result;
-        }else{
-            ResponseResult result = new ResponseResult(false,400,"获取失败","");
-            return result;
+        // 3.判断token是否一致
+        if(header_token.equals(session_token)){
+            // 获取用户id
+            Integer user_id = (Integer) request.getSession().getAttribute("user_id");
+            // 调用service,进行菜单信息查询
+            ResponseResult responseResult = userService.getUserPermissions(user_id);
+            return responseResult;
+        }else {
+            ResponseResult responseResult = new ResponseResult(false, 400, "获取菜单信息失败", null);
+            return responseResult;
         }
     }
 
