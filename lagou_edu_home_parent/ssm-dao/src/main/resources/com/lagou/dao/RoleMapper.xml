@@ -33,4 +33,41 @@
     <delete id="deleteRole" parameterType="int">
         delete from roles where id = #{roleid}
     </delete>
+
+    <!--查询当前角色拥有的资源分类信息-->
+    <select id="findResourceCategoryByRoleId" parameterType="int" resultType="com.lagou.domain.ResourceCategory">
+        SELECT
+          *
+        FROM
+          resource_category rc
+        WHERE rc.`id` IN
+          (SELECT DISTINCT
+            r.category_id
+          FROM
+            resource r
+            INNER JOIN role_resource_relation rr
+              ON r.`id` = rr.`resource_id`
+          WHERE rr.`role_id` = #{roleId} )
+    </select>
+
+    <!--查询当前角色拥有的资源信息-->
+    <select id="findResourceByRoleId" parameterType="int" resultType="com.lagou.domain.Resource">
+        SELECT
+          r.*
+        FROM
+          resource r
+          INNER JOIN role_resource_relation rr
+            ON r.`id` = rr.`resource_id`
+        WHERE rr.`role_id` = #{roleId}
+    </select>
+
+    <!--根据角色ID 删除角色与资源的关联关系(操作中中间表 role_resource_relation)-->
+    <delete id="deleteRoleContextResource" parameterType="int">
+        DELETE FROM role_resource_relation WHERE role_id = #{roleId}
+    </delete>
+
+    <!--为角色分配资源, 删除完成后 ,插入最新的关联关系-->
+    <insert id="roleContextResource" parameterType="com.lagou.domain.RoleResourceRelation">
+        INSERT INTO role_resource_relation VALUES (NULL,#{resourceId},#{roleId},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
+    </insert>
 </mapper>
